@@ -29,7 +29,7 @@ if __name__ == "__main__":
         f.write('当前进程号为: %s'%str(os.getpid()) + '  ,' + datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))
 
     # 路径需要根据实际情况进行修改
-    _make_mosaic = MAKE_RADAR_MOSAIC('make_mosaic_mp.ini')
+    _make_mosaic = MAKE_RADAR_MOSAIC('/home/wjzhu/OneDrive/PythonCode/MyWork/metradar/metradar/project/make_mosaic/make_mosaic_mp.ini')
 
     if not _make_mosaic.berror:
 

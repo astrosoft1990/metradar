@@ -14,7 +14,8 @@ import math
 import numpy as np
 import os
 import configparser
-from make_mosaic_mp_archive import MAKE_RADAR_MOSAIC
+# from make_mosaic_mp_archive import MAKE_RADAR_MOSAIC
+from metradar.project.make_mosaic.make_mosaic_func import MAKE_RADAR_MOSAIC
 from multiprocessing import freeze_support
 from datetime import datetime,timedelta
 import xarray as xr
@@ -26,6 +27,20 @@ from matplotlib import font_manager
 import matplotlib
 from metradar.util.comm_func import geopotential_to_height
 matplotlib.use('agg')
+
+from pathlib import Path
+from metradar.config import CONFIG
+
+# 资源文件路径
+RESOURCES_PATH = CONFIG.get('SETTING','RESOURCES_PATH')
+FONT_FILE = RESOURCES_PATH + '/fonts/YaHeiConsolasHybrid_1.12.ttf'
+RADAR_FILE = RESOURCES_PATH + '/stations/radars.csv'
+COLOR_FILE = RESOURCES_PATH + '/gr2_colors/default_BR_PUP1.pal'
+
+# 获取当前脚本所在目录
+SCRIPT_DIR = Path(__file__).resolve().parent
+print("当前脚本路径：",SCRIPT_DIR)
+
 # 一键生成VPR数据和自动站数据，并绘制图形
 #数据来源：天擎
 
@@ -69,7 +84,7 @@ class CONSTRUCT_VPR:
         
         self.pic_format = config['SETTINGS']['pic_format']
         self.pic_dpi = int(config['SETTINGS']['pic_dpi'])
-        self.colorfile = config['SETTINGS']['colorfile']
+        
         self.time_range = "[%s,%s]"%(self.start_time, self.end_time)
 
         # self.tlogp_time = '20230731000000'
@@ -99,12 +114,15 @@ class CONSTRUCT_VPR:
         if not os.path.exists(self.outpath_mosaic):
             os.makedirs(self.outpath_mosaic)   
 
-        self.radarfile = config['SETTINGS']['radarfile']
+        self.colorfile = COLOR_FILE
+        self.radarfile = RADAR_FILE
         self.base_mosaic_inifile = config['SETTINGS']['base_mosaic_inifile']
-        self.fontfile = config['SETTINGS']['fontfile']
+        self.fontfile = FONT_FILE
         self.data_code_radar_api = config['SETTINGS']['data_code_radar_api']
         self.data_code_aws_api = config['SETTINGS']['data_code_aws_api']
 
+        # 默认拼图文件不可用
+        self.bmosaic_vilid = False
     
     # 第一步，从天擎下载自动站数据
     def get_aws_data(self,):
@@ -112,7 +130,7 @@ class CONSTRUCT_VPR:
         # A7606, A7607, A7055, A7617 重庆
         # # 54501 斋堂, A1067 丰台千灵山 A1254 大兴庞各庄
     
-        
+        print("entering get_aws_data function")
         elements='Station_Name,Station_Id_C,Station_Id_d,lat,lon,Datetime,PRE,PRE_1h'
 
         data_code =  self.data_code_aws_api
@@ -177,6 +195,8 @@ class CONSTRUCT_VPR:
         
         # tmpdata['stanum'].values[0] int
         # staid_tlogp = str(tmpdata['stanum'].values[0])
+        
+        print("entering get_tlogp_data function")
         tlogpdata = cmadaas_sounding_by_time(times=self.tlogp_time)
         allstas = np.unique(tlogpdata['Station_Id_C'])
         alllons=[]
@@ -211,6 +231,8 @@ class CONSTRUCT_VPR:
         # 第三步，从天擎读取雷达数据 
         # 先检查是否已经存在拼图文件，而且拼图文件中的时间和范围能够覆盖当前自动站
         # 如果已经能满足要求，则不再下载雷达数据
+        print("entering get_fmt_data function")
+        
         startt = datetime.strptime(self.start_time,'%Y%m%d%H%M%S')
         endt   = datetime.strptime(self.end_time,'%Y%m%d%H%M%S')
         curt = startt
@@ -247,26 +269,36 @@ class CONSTRUCT_VPR:
                 need_file_times.append(curt)
             curt += timedelta(minutes=6)
             
-        
-
+        if len(need_file_times) == 0:
+            self.bmosaic_vilid = True
+            return True
+ 
         # 如果不能满足要求，则下载雷达数据
 
         # 根据自动站经纬度，自动判断应该下载哪些雷达站的数据
         # 读取雷达站点信息，获取经纬度、站号等信息
         valid_range = 200
-        radinfo = pd.read_csv(self.radarfile,sep='|',names=['radar_id','radar_name','gr2_name','radar_lat','radar_lon','radar_alt'],index_col=0)
+        radinfo = pd.read_csv(self.radarfile,header=0,index_col=0)
 
-        x,y = geotrans.geographic_to_cartesian_aeqd(radinfo['radar_lon'],radinfo['radar_lat'],self.sta_lon,self.sta_lat, R=6370997.0)
+        x,y = geotrans.geographic_to_cartesian_aeqd(radinfo['经度'],radinfo['纬度'],self.sta_lon,self.sta_lat, R=6370997.0)
         # dis = math.sqrt(pow(x[0],2) + pow(y[0],2))
         dis = [math.sqrt(pow(x[k],2) + pow(y[k],2))/1000 for k in range(len(x))]
         flag = np.array(dis) <= valid_range
         # flag = np.where(dis<=valid_range)[0]
         tmpdata = radinfo.loc[flag]
-        self.rdinfo = tmpdata.loc[:,['radar_name','radar_lat','radar_lon']]
-    
+        self.rdinfo = tmpdata.loc[:,['站名','纬度','经度']]
+        # # 暂时去掉不以Z9开头的站点
+        
+        self.used_radars = self.rdinfo.index.to_list()
 
         for site in self.rdinfo.index:
             print(site)
+            # 暂时去掉不以Z9开头的站点
+            if not site.startswith('Z9'):
+                print("暂时不支持不以Z9开头的站点！")
+                self.used_radars.remove(site)
+                continue
+            
             # 从天擎下载该站号的雷达资料
             if len(need_file_times) == 0:
                 pass
@@ -283,7 +315,7 @@ class CONSTRUCT_VPR:
     # 第四步，制作区域三维拼图
     def make_mosaic(self,):
         # 修改配置文件
-        
+        print("entering make_mosaic function")
         config = configparser.ConfigParser()
         config.read(self.base_mosaic_inifile)
         config.set('ARCHIVE', 'input_path_archive', self.outpath_fmt) # 
@@ -293,18 +325,17 @@ class CONSTRUCT_VPR:
         config.set('COMMON_SETTING', 'center_lon', '%.3f'%self.sta_lon) # 
         config.set('COMMON_SETTING', 'center_lat', '%.3f'%self.sta_lat) # 
         config.set('COMMON_SETTING', 'mosaic_range', '50') # 
-        config.set('COMMON_SETTING', 'radar_sitesfile', self.radarfile) #
 
 
         str_site=''
-        for site in self.rdinfo.index:
-            if site.startswith('ZA') or site.startswith('ZB'): # 暂时去掉X波段的数据
-                continue
+        for site in self.used_radars:
             str_site += site+','
-        config.set('COMMON_SETTING', 'radars', str_site) # 
-        config.write(open(self.base_mosaic_inifile, 'w')) # 将修改后的配置写入文件
+        config.set('COMMON_SETTING', 'radars', str_site) #
+        # 在当前脚本路径下，创建临时ini文件，其中包含任务名
+        cur_ini = SCRIPT_DIR / ('make_mosaic_' + self.task_name + '.ini')
+        config.write(open(cur_ini, 'w')) # 将修改后的配置写入文件
 
-        _make_mosaic = MAKE_RADAR_MOSAIC(self.base_mosaic_inifile)
+        _make_mosaic = MAKE_RADAR_MOSAIC(cur_ini)
 
         if not _make_mosaic.berror:
             if _make_mosaic.run_mode == 'archive':
@@ -316,7 +347,7 @@ class CONSTRUCT_VPR:
 
     # 第五步：从三维拼图数据中获取格点的时间序列
     def make_vpr(self,):
-        
+        print("entering make_vpr function")
         data = pd.read_csv(self.outpath_sta+os.sep+self.outname_sta,index_col=0,encoding='gbk')
         sta_lat = data['lat'][0]
         sta_lon = data['lon'][0]
@@ -372,6 +403,8 @@ class CONSTRUCT_VPR:
     
     # 第六步，绘制图形
     def draw_pic(self,):
+        
+        print("entering draw_pic function")
         oridf = pd.read_csv(self.outpath_sta+os.sep+self.outname_sta,encoding='gbk')#,index_col=0
 
         oridf['Datetime'] = pd.to_datetime(oridf['Datetime'], format="%Y-%m-%d %H:%M:%S")
@@ -497,8 +530,14 @@ class CONSTRUCT_VPR:
             return False
         if not self.get_fmt_data():
             return False
-        if not self.make_mosaic():
-            return False
+        
+        # 如果拼图文件不可用，则重新制作拼图
+        if not self.bmosaic_vilid:
+            if not self.make_mosaic():
+                return False
+        else:
+            print("拼图文件已经存在，跳过拼图制作步骤。")
+            
         if not self.make_vpr():
             return False
         if not self.draw_pic():

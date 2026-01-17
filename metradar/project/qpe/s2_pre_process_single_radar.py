@@ -59,7 +59,7 @@ def process_single(tstep=10):
                     if file.find(rd) < 0:
                         continue
                     allfiles.append(file)
-                    allpaths.append(os.path.join(root,file))
+                    allpaths.append(root)
                     
         curoutpath = PATH_RR + os.sep + rd
         if not os.path.exists(curoutpath):

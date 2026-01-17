@@ -21,6 +21,12 @@ from metradar.util.radar_common import RADAR_COMMON
 from metradar.io.decode_fmt_pyart import read_cnrad_fmt
 radarcommon = RADAR_COMMON()
 
+from metradar.config import CONFIG
+
+# 资源文件路径
+RESOURCES_PATH = CONFIG.get('SETTING','RESOURCES_PATH')
+RADAR_FILE = RESOURCES_PATH + '/stations/radars.csv'
+
 class MAKE_RADAR_MOSAIC:
 
     # sub function for reading config file
@@ -59,10 +65,10 @@ class MAKE_RADAR_MOSAIC:
         
 
         self.radar_mode = config['COMMON_SETTING']['radar_mode']
-        self.radar_sitesfile = config['COMMON_SETTING']['radar_sitesfile']
+        self.radar_sitesfile = RADAR_FILE
 
         if not os.path.exists(self.radar_sitesfile):
-            print(self.radar_sitesfile + ' not exists!')
+            print("雷达站点文件：" + self.radar_sitesfile + ' 不存在，请检查!')
             self.berror = True
             
 
@@ -188,31 +194,26 @@ class MAKE_RADAR_MOSAIC:
         fileinfo=dict()
         nvalidradars = 0
         validradars=[]
+        
+        # 遍历所有目录
+       
         for radar in radars:
-            curpath = rootpath + os.sep + radar
-            if not os.path.exists(curpath):
-                print(curpath + ' not exists!')
-                # radars.remove(radar)
-                continue
-            
-            curfiles = os.listdir(curpath)
-            if len(curfiles)==0:
-                print(curpath + ' file number = %d'%len(curfiles))
-                continue
             
             validfiles = []
-            for ff in curfiles:
-                if ff.find('bz2') < 0:
-                    continue
-                else:
-                    validfiles.append(ff)
+            validpaths = []
+            for root, dirs, files in os.walk(rootpath):
+                for file in files:
+                    if file.endswith('.bz2'):
+                        if file.find(radar) < 0:
+                            continue
+                        validfiles.append(file)
+                        validpaths.append(root)
+            
             curfiles = sorted(validfiles)
             tmptime=[]
             tmpfile=[]
             for file in curfiles:
-  
-
-                # cft = datetime.strptime(file[5:5+14],'%Y%m%d%H%M%S')
+                curpath = validpaths[validfiles.index(file)]
                 cft = datetime.strptime(file.split('_')[4],'%Y%m%d%H%M%S')
                 tmptime.append(cft.timestamp())
                 tmpfile.append(curpath + os.sep + file)

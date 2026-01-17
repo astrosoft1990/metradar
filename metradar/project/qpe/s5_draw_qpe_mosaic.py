@@ -258,7 +258,7 @@ if __name__ == '__main__':
 
     #如果未指定配置文件，则选用默认的配置
     if len(inifile) ==0:
-        inifile = 'qpe/main_qpe_cfg.ini'
+        inifile = '/home/wjzhu/OneDrive/PythonCode/MyWork/metradar/metradar/project/qpe/main_qpe_cfg.ini'
         # inifile = 'archive_main_qpe_cfg.ini'
     else:
         inifile = inifile[0]

@@ -19,7 +19,7 @@ import time
 import sched
 import sys
 from multiprocessing import Pool,cpu_count,freeze_support
-
+import pandas as pd
 schedule = sched.scheduler(time.time, time.sleep)
 
 BDEBUG=False
@@ -216,7 +216,7 @@ def do_single(curt:datetime):
                         print('%s 站原始文件无变化: '%rd)
 
                     print('%s 站需制作新产品或原始文件有更新，处理：'%rd + curfilename + ' loaded!')
-    
+
                     # check site location
                     # 先检查rd是否在ALL_RADARS的索引里面
                     if rd not in ALL_RADARS.index:
@@ -224,7 +224,7 @@ def do_single(curt:datetime):
                     
                     if abs(grid.radlon - ALL_RADARS.loc[rd]['经度']) > 0.1 or abs(grid.radlat - ALL_RADARS.loc[rd]['纬度']) > 0.1:
                         print('%s 站的经度或纬度有异常，基数据中的记录的位置和站点表中记录的不一致，误差超过了0.1度，请注意，这里暂时以数据中记录的为准！'%rd)
-                        print('基数据中记录的经度为%.3f, 纬度为%.3f'%(grid.radar_longitude['data'][0],grid.radar_latitude['data'][0]))
+                        print('基数据中记录的经度为%.3f, 纬度为%.3f'%(grid.radlon,grid.radlat))
                         print('站号表文件radarsites_national.pkl中记录的经度为%.3f, 纬度为%.3f'%(ALL_RADARS.loc[rd]['经度'],ALL_RADARS.loc[rd]['纬度']))
 
                     used_sites.append(rd)
@@ -316,7 +316,7 @@ def do_single(curt:datetime):
                     print(mosaic_path + os.sep + outname + ' 重命名失败！')
 
                 print(mosaic_path + os.sep + outname + ' done!')
-    except:
+    except :
         print(mosaic_path + os.sep + outname + ' + do_single 失败，跳过！')
 
 def get_time_range_from_filelist():
@@ -472,7 +472,7 @@ if __name__ == "__main__":
     
     ROOT_PATH = config['PATH_SETTING']['ROOT_PATH']
     BASEDATA_PATH = ROOT_PATH + os.sep + config['PATH_SETTING']['BASEDATA_PATH']
-
+    RADAR_SITES_FILE = config['PATH_SETTING']['RADAR_SITES_FILE']
     RADARS = config['RADAR_SITES']['RADARS'].split(',')
     PATH_QPE = ROOT_PATH + os.sep + config['PATH_SETTING']['PATH_QPE']
     PATH_QPE_MOSAIC = ROOT_PATH + os.sep + config['PATH_SETTING']['PATH_QPE_MOSAIC']
@@ -496,12 +496,11 @@ if __name__ == "__main__":
     REDO_MINS = int(config['PARAMS']['REDO_MINS'])
     MOSAIC_STEP = int(config['PARAMS']['MOSAIC_STEP'])
 
-    if not os.path.exists('radarsites_national.pkl'):
-        print('radarsites_national.pkl 文件不存在，程序退出！')
+    if not os.path.exists(RADAR_SITES_FILE):
+        print(RADAR_SITES_FILE + ' 文件不存在，程序退出！')
         exit(-1)
-    f = open('radarsites_national.pkl','rb')
-    ALL_RADARS = pickle.load(f)
-    f.close()
+    ALL_RADARS = pd.read_csv(RADAR_SITES_FILE,header=0,index_col=0)
+    
 
     with open('current_pid_s4_%d.txt'%RUNMODE,'wt') as f:
         f.write('current pid is: %s'%str(os.getpid()) + '  ,' + datetime.now().strftime('%Y-%m-%dT%H:%M:%S'))

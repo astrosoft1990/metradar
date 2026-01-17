@@ -101,19 +101,13 @@ if __name__=='__main__':
     print(os.path.exists(config_file))
     config = _get_config_from_rcfile(config_file)
     staIds = config['RADAR_SITES']['RADARS'].split(',')
-    dns = config['DAAS_SERVER']['DNS']
-    port = config['DAAS_SERVER']['PORT']
-    user_id = config['DAAS_SERVER']['USER_ID']
-    pwd = config['DAAS_SERVER']['PASSWD']
-    service_node_id = config['DAAS_SERVER']['SERVICE_NODE_ID']
+    
     outpath = config['PATH_SETTING']['ROOT_PATH'] + os.sep + config['PATH_SETTING']['BASEDATA_PATH']
-    data_code = config['DAAS_API_SETTING']['DATA_CODE']
-    interface_id = config['DAAS_API_SETTING']['RADAR_API']
-    elements = config['DAAS_API_SETTING']['ELEMENTS']
+    
     q_tstep = config['QUIRY_SETTING']['QUIRY_STEP']
     q_trange = config['QUIRY_SETTING']['QUIRY_RANGE']
     data_save_hours = config['DATA_SAVE_SETTING']['DATA_SAVE_HOURS']
-    # radarfile = config['PATH_SETTING']['RADARFILE']
+
         
 
     # 增加数据下载任务

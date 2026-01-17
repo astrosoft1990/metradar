@@ -2,8 +2,6 @@
 
 # _*_ coding: utf-8 _*_
 
-# Copyright (c) 2026 NMC Developers.
-# Distributed under the terms of the GPL V3 License.
 '''
 画雷达综合图主程序
 

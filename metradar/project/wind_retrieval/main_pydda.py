@@ -633,11 +633,12 @@ if __name__ == "__main__":
     parser.add_argument('--drawcross', dest='drawpic_cross', action='store_const', 
                         const=drawpic_cross,
                         help='draw XZ and YZ pic')
+    #是否为debug模式
     BDEBUG=True
 
     if BDEBUG:
         print('当前为debug模式，所以直接读取主目录下的config.ini, 请注意！')
-        config_path = 'metradar/retrieve/wind/config_3dwind.ini'
+        config_path = '/home/wjzhu/OneDrive/PythonCode/MyWork/metradar/metradar/project/wind_retrieval/config_3dwind.ini'
         if not os.path.exists(config_path):
             print('%s not exists! please check!'%config_path)
             sys.exit(-1)

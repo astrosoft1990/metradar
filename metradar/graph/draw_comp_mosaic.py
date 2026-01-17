@@ -19,7 +19,7 @@ from matplotlib.font_manager import FontProperties
 import pandas as pd
 from pyart.graph import common
 from datetime import datetime,timedelta
-from metradar.util.parse_pal import parse_pro
+from metradar.util.parse_pal import parse_pro,parse
 import xarray as xr
 
 from metradar.config import CONFIG
@@ -260,12 +260,10 @@ def draw_composite_operational(gridfile,outpath='.',level=4,vmin=0,vmax=75,color
         cmapname = 'NWSRef'
         cmap = common.parse_cmap(cmapname, field)
     else:
-        # colorfile='gr2_colors/default_BR_PUP2.pal'
-        # colorfile = 'gr2_colors/BR_WDTB_Bright.pal'
-
-        outdic= parse_pro(colorfile)
-        cmap=outdic['cmap']
-        norm=outdic['norm']
+        cmap,norm=parse(colorfile)
+        # outdic= parse(colorfile)
+        # cmap=outdic['cmap']
+        # norm=outdic['norm']
 
     display.plot_grid(field, level, vmin=vmin, vmax=vmax,
                     ax=ax_main,colorbar_flag=False,title_flag=False,
@@ -274,9 +272,6 @@ def draw_composite_operational(gridfile,outpath='.',level=4,vmin=0,vmax=75,color
     add_china_map_2cartopy(ax_main, name='province', facecolor='none',edgecolor=None, lw=1)
     draw_gisinfo(ax_main,slat=ylim_south,nlat=ylim_north,wlon=xlim_west,elon=xlim_east)
     
-    # point_lat = 30.72
-    # point_lon = 108.57
-    # ax_main.plot(point_lon,point_lat,marker='o',color='k',markersize=6,transform=ccrs.PlateCarree())
     infostr = '基于 metradar 制作'
 
     fig.text(0.05,0.03, infostr, va="center", ha="left", font=font_mid ) 
@@ -333,14 +328,14 @@ def draw_composite_operational(gridfile,outpath='.',level=4,vmin=0,vmax=75,color
 if __name__ == "__main__":
 
     
-    path = '/home/wjzhu/OneDrive/PythonCode/MyWork/metradar/metradar/output/mosaic_pyart'
-    outpath = '/home/wjzhu/OneDrive/PythonCode/MyWork/metradar/metradar/output/mosaic_pyart_pic'
+    path = '/mnt/e/metradar_test/vpr/mosaic/20230731_daxing'
+    outpath = '/mnt/e/metradar_test/vpr/mosaic/20230731_daxing/mosac_pic'
 
     print(os.listdir(path))
     for file in os.listdir(path):
         if not file.endswith('.nc'):
             continue
-        draw_composite_operational(path + os.sep + file,outpath,colorfile=COLOR_FILE)
+        draw_composite_operational(path + os.sep + file,outpath,colorfile=None)
         pass
 
 

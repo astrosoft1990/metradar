@@ -1,8 +1,6 @@
 
 # _*_ coding: utf-8 _*_
 
-# Copyright (c) 2026 NMC Developers.
-# Distributed under the terms of the GPL V3 License.
 
 '''
 该脚本是用于批量绘制综合体，并可以针对不同case进行不同的绘图设置，具体参数保存在类似radardrawlist_20120612.csv文件中

@@ -40,6 +40,7 @@ dependencies = [
     "nmc_met_io>=0.1.15.0",
     "netCDF4>=1.7.4",
     "schedule>=1.2.2",
+    "nmc_met_graphics>=0.1.5.4",
 ]
 
 requires-python = ">=3.10,<3.13"
@@ -48,4 +49,4 @@ license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 include = ["metradar*",]
-exclude = ["cfg","resources","test*","private_res","tlogp","*.txt","output","pic",".metradar"]
+exclude = ["cfg","resources","test*","private_res","tlogp","*.txt","output","pic",".metradar",]
