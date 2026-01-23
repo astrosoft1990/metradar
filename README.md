@@ -29,9 +29,9 @@ Using the fellowing command to install packages:
 ### 📂若要构建全功能运行环境，建议安装顺序如下：
 * conda create -n radar312 python=3.12
 * conda activate radar312
+* conda install -c conda-forge pysteps -y
 * pip install metradar
 * conda install -c conda-forge arm_pyart -y
-* conda install -c conda-forge cartopy -y
 * conda install -c conda-forge gdal -y
 * pip install tensorflow
 * pip install tensorflow-probability

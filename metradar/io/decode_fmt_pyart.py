@@ -186,6 +186,7 @@ def read_cnrad_fmt(filename, field_names=None, additional_metadata=None,
     radar_atenna_gain['data'] = nfile.get_antenna_gain()
     radar_receiver_bandwidth['data'] = nfile.get_receiver_bandwidth()
     
+
     instrument_parameters = {'unambiguous_range': unambiguous_range,
                              'nyquist_velocity': nyquist_velocity, 
                              'radar_beam_width_h': radar_beam_width_h,

@@ -36,7 +36,7 @@ def _get_config_from_rcfile(rc='config.ini'):
     """
 
     if not os.path.exists(rc):
-        print(rc + ' not exists!')
+        print(str(rc) + os.sep + ' not exists!')
         return None
   
     try:
