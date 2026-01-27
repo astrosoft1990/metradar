@@ -188,7 +188,7 @@ class MAKE_RADAR_MOSAIC:
         if not breplace and os.path.exists(outpath + os.sep + outname): 
             print(outname + ' already exits!')
             return False
-        curt = datetime.strptime(timestr,'%Y%m%d%H%M%S') 
+        curt = datetime.strptime(timestr,'%Y%m%d%H%M') 
         curt = curt.timestamp()
         timeinfo=dict()
         fileinfo=dict()
@@ -420,7 +420,7 @@ class MAKE_RADAR_MOSAIC:
         print('periods = %d'%periods)
         dt = pd.date_range(st,freq='%dmin'%self.tstep,periods=periods)
         dt = pd.to_datetime(dt)
-        alltimes=[tt.strftime('%Y%m%d%H%M') + '00' for tt in dt]
+        alltimes=[tt.strftime('%Y%m%d%H%M') for tt in dt]
 
         rootpath = self.input_path_archive
         outpath = self.output_path_archive
