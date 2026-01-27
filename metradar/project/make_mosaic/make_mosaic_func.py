@@ -188,7 +188,7 @@ class MAKE_RADAR_MOSAIC:
         if not breplace and os.path.exists(outpath + os.sep + outname): 
             print(outname + ' already exits!')
             return False
-        curt = datetime.strptime(timestr,'%Y%m%d%H%M%S') 
+        curt = datetime.strptime(timestr,'%Y%m%d%H%M') 
         curt = curt.timestamp()
         timeinfo=dict()
         fileinfo=dict()
