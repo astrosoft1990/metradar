@@ -420,7 +420,7 @@ class MAKE_RADAR_MOSAIC:
         print('periods = %d'%periods)
         dt = pd.date_range(st,freq='%dmin'%self.tstep,periods=periods)
         dt = pd.to_datetime(dt)
-        alltimes=[tt.strftime('%Y%m%d%H%M') for tt in dt]
+        alltimes=[tt.strftime('%Y%m%d%H%M') + '00' for tt in dt]
 
         rootpath = self.input_path_archive
         outpath = self.output_path_archive
