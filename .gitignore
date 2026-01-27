@@ -116,3 +116,5 @@ DEM/
 maps/
 test/
 fonts/
+MANIFEST.in
+rebuild.sh

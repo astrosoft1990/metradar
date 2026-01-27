@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "metradar"
-version = "0.1.8.4"
+version = "0.1.8.5"
 authors = [
     { name = "Wenjian Zhu", email = "kevin2075@163.com" }
 ]
@@ -48,7 +48,7 @@ license-files = ["LICENSE"]
 
 [tool.setuptools.packages.find]
 include = ["metradar*",]
-exclude = ["cfg","test*","private_res","tlogp","*.txt","output","pic",".metradar","fonts","国省市县审图号(GS (2019) 3082号","DEM","maps","test"]
+exclude = ["rebuild.sh","MANIFEST.in","cfg","test*","private_res","tlogp","*.txt","output","pic",".metradar","fonts","国省市县审图号(GS (2019) 3082号","DEM","maps","test"]
 
 [project.urls]
 Homepage = "https://github.com/nmcdev/metradar"
